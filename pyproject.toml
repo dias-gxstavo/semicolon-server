@@ -1,0 +1,46 @@
+[project]
+name = "semicolon-server"
+version = "0.1.0"
+description = "a markdown editor"
+readme = "README.md"
+authors = [
+    { name = "Gustavo Dias", email = "gustavodiashug9@gmail.com" }
+]
+
+requires-python = ">=3.14"
+
+dependencies = [
+    "alembic>=1.19.1",
+    "fastapi[standard]>=0.141.1",
+    "pydantic>=2.13.4",
+    "pydantic-settings>=2.15.0",
+    "sqlalchemy>=2.0.52",
+]
+
+[dependency-groups]
+dev = [
+    "pre-commit>=4.6.2",
+    "ruff>=0.16.4",
+    "taskipy>=1.14.1",
+]
+
+[tool.fastapi]
+entrypoint = "src.main:app"
+
+[tool.ruff]
+line-length = 79
+exclude = ["migrations/"]
+
+[tool.ruff.lint]
+preview = true
+select = ['I', 'F', 'E', 'W', 'PL', 'PT']
+
+[tool.ruff.format]
+preview = true
+quote-style = 'single'
+
+[tool.taskipy.tasks]
+lint = 'uv run ruff check'
+format = 'uv run ruff format'
+server = 'uv run fastapi dev'
+test = 'pytest -s -x --cov=app -vv'
