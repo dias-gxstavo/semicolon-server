@@ -6,7 +6,7 @@ class NoteCreate(BaseModel):
     content: str
 
 
-class UserResponse(BaseModel):
+class NoteResponse(BaseModel):
     note_id: int
     title: str
     content: str
