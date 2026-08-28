@@ -1,18 +1,24 @@
 from datetime import datetime
 
-from sqlalchemy import func
-from sqlalchemy.orm import Mapped, mapped_as_dataclass, mapped_column, registry
+from sqlalchemy import String, func
+from sqlalchemy.orm import (
+    DeclarativeBase,
+    Mapped,
+    MappedAsDataclass,
+    mapped_column,
+)
 
-table_registry = registry()
+
+class Base(MappedAsDataclass, DeclarativeBase):
+    pass
 
 
-@mapped_as_dataclass(table_registry)
-class Note:
+class Note(Base):
     __tablename__ = 'notes'
 
     note_id: Mapped[int] = mapped_column(init=False, primary_key=True)
-    title: Mapped[str]
-    content: Mapped[str]
+    title: Mapped[str] = mapped_column(String, unique=True)
+    content: Mapped[str] = mapped_column(String)
     created_at: Mapped[datetime] = mapped_column(
         init=False, server_default=func.now()
     )
