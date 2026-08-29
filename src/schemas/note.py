@@ -13,10 +13,14 @@ class NoteUpdate(BaseModel):
     content: str
 
 
-class NoteResponse(BaseModel):
+class NoteList(BaseModel):
     note_id: int
     title: str
     created_at: datetime
     updated_at: datetime
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class NoteResponse(NoteList):
+    content: str
