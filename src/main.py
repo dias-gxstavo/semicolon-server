@@ -2,10 +2,10 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
-from . import models
 from .database import engine, get_db
+from .models import note
 
-models.Base.metadata.create_all(bind=engine)
+note.Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 
