@@ -30,13 +30,13 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
 
 
 @router.get('/', response_model=list[schemas.NoteList])
-def get_notes(db: Session = Depends(get_db)):
+def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     stmt = db.query(
         models.Note.note_id,
         models.Note.title,
         models.Note.created_at,
         models.Note.updated_at,
-    )
+    ).offset(skip).limit(limit)
     return stmt
 
 
