@@ -23,7 +23,8 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     except IntegrityError:
         db.rollback()
         raise HTTPException(
-            status_code=400, detail='Note with this title already exists.'
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail='Note with this title already exists.',
         )
     return new_note
 
