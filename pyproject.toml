@@ -1,7 +1,7 @@
 [project]
 name = "semicolon-server"
 version = "0.1.0"
-description = "a markdown editor"
+description = "semicolon - a simple markdown editor"
 readme = "README.md"
 authors = [
     { name = "Gustavo Dias", email = "gustavodiashug9@gmail.com" }
