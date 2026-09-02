@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, load_only
+from sqlalchemy.sql import select
 
 from src.database import get_db
 from src.models import note as models
@@ -31,33 +32,43 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
 
 @router.get('/', response_model=list[schemas.NoteList])
 def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
-    stmt = db.query(
-        models.Note.note_id,
-        models.Note.title,
-        models.Note.created_at,
-        models.Note.updated_at,
-    ).offset(skip).limit(limit)
-    return stmt
+    stmt = (
+        select(models.Note)
+        .options(
+            load_only(
+                models.Note.note_id,
+                models.Note.title,
+                models.Note.created_at,
+                models.Note.updated_at,
+            )
+        )
+        .offset(skip)
+        .limit(limit)
+    )
+
+    return db.scalars(stmt).all()
 
 
 @router.get('/{note_id}', response_model=schemas.NoteResponse)
 def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
-    stmt = db.query(models.Note).filter(models.Note.note_id == note_id).first()
+    stmt = select(models.Note).where(models.Note.note_id == note_id)
+    note = db.scalar(stmt)
 
-    if stmt is None:
+    if note is None:
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail='Note is not found.'
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail='Note is not found.',
         )
 
-    return stmt
+    return note
 
 
 @router.patch('/{note_id}', response_model=schemas.NoteResponse)
 def update_note(
     note_id: int, data: schemas.NoteUpdate, db: Session = Depends(get_db)
 ):
-
-    note = db.query(models.Note).filter(models.Note.note_id == note_id).first()
+    stmt = select(models.Note).where(models.Note.note_id == note_id)
+    note = db.scalar(stmt)
 
     if note is None:
         raise HTTPException(
@@ -67,14 +78,11 @@ def update_note(
     update_data = data.model_dump(exclude_unset=True)
 
     if 'title' in update_data:
-        existing_note = (
-            db.query(models.Note)
-            .filter(
-                models.Note.title == update_data['title'],
-                models.Note.note_id != note_id,
-            )
-            .first()
+        title_stmt = select(models.Note).where(
+            models.Note.title == update_data['title'],
+            models.Note.note_id != note_id,
         )
+        existing_note = db.scalar(title_stmt)
 
         if existing_note:
             raise HTTPException(
@@ -93,12 +101,13 @@ def update_note(
 
 @router.delete('/{note_id}', status_code=status.HTTP_204_NO_CONTENT)
 def delete_note(note_id: int, db: Session = Depends(get_db)):
-    stmt = db.query(models.Note).filter(models.Note.note_id == note_id).first()
+    stmt = select(models.Note).where(models.Note.note_id == note_id)
+    note = db.scalar(stmt)
 
-    if stmt is None:
+    if note is None:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail='Note is not found.'
         )
 
-    db.delete(stmt)
+    db.delete(note)
     db.commit()
