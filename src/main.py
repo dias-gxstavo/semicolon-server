@@ -4,9 +4,12 @@ from sqlalchemy.sql import text
 
 from .database import engine, get_db
 from .models import note
+from .routers import notes
 
 note.Base.metadata.create_all(bind=engine)
 app = FastAPI()
+
+app.include_router(notes.router)
 
 
 @app.get('/health', status_code=status.HTTP_200_OK, tags=['health'])

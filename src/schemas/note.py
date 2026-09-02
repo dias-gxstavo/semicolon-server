@@ -3,14 +3,18 @@ from datetime import datetime
 from pydantic import BaseModel, ConfigDict
 
 
-class NoteCreate(BaseModel):
+class NoteBase(BaseModel):
     title: str
     content: str
+
+
+class NoteCreate(NoteBase):
+    pass
 
 
 class NoteUpdate(BaseModel):
-    title: str
-    content: str
+    title: str | None = None
+    content: str | None = None
 
 
 class NoteList(BaseModel):
