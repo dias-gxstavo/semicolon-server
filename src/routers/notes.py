@@ -10,7 +10,9 @@ from src.schemas import note as schemas
 router = APIRouter(prefix='/notes', tags=['notes'])
 
 
-@router.post('/', response_model=schemas.NoteResponse)
+@router.post(
+    '/', response_model=schemas.NoteResponse, summary='Create a new note'
+)
 def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     new_note = models.Note(
         title=data.title,
@@ -30,7 +32,11 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     return new_note
 
 
-@router.get('/', response_model=list[schemas.NoteList])
+@router.get(
+    '/',
+    response_model=list[schemas.NoteList],
+    summary='Get a list of all available notes.',
+)
 def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     stmt = (
         select(models.Note)
@@ -49,7 +55,11 @@ def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     return db.scalars(stmt).all()
 
 
-@router.get('/{note_id}', response_model=schemas.NoteResponse)
+@router.get(
+    '/{note_id}',
+    response_model=schemas.NoteResponse,
+    summary='Get informations about a specific note',
+)
 def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     stmt = select(models.Note).where(models.Note.note_id == note_id)
     note = db.scalar(stmt)
@@ -63,7 +73,11 @@ def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     return note
 
 
-@router.patch('/{note_id}', response_model=schemas.NoteResponse)
+@router.patch(
+    '/{note_id}',
+    response_model=schemas.NoteResponse,
+    summary='Partially updates information for a specific invoice',
+)
 def update_note(
     note_id: int, data: schemas.NoteUpdate, db: Session = Depends(get_db)
 ):
@@ -99,8 +113,15 @@ def update_note(
     return note
 
 
-@router.delete('/{note_id}', status_code=status.HTTP_204_NO_CONTENT)
+@router.delete(
+    '/{note_id}',
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary='Deletes a specific note',
+)
 def delete_note(note_id: int, db: Session = Depends(get_db)):
+    """
+    D
+    """
     stmt = select(models.Note).where(models.Note.note_id == note_id)
     note = db.scalar(stmt)
 
