@@ -12,8 +12,13 @@ app = FastAPI(title='semicolon - a simple markdown editor')
 app.include_router(notes.router)
 
 
-@app.get('/health', status_code=status.HTTP_200_OK, tags=['health'], summary="Returns the status of the database connection")
-async def health_check(db: Session = Depends(get_db)):
+@app.get(
+    '/health',
+    status_code=status.HTTP_200_OK,
+    tags=['health'],
+    summary='Returns the status of the database connection',
+)
+def health_check(db: Session = Depends(get_db)):
     try:
         db.execute(text('SELECT 1'))
         return {'status': 'healthy', 'database': 'connected'}
