@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
@@ -10,6 +11,14 @@ note.Base.metadata.create_all(bind=engine)
 app = FastAPI(title='semicolon - a simple markdown editor')
 
 app.include_router(notes.router)
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=['*'],
+    allow_methods=['*'],
+    allow_headers=['*'],
+)
 
 
 @app.get(
