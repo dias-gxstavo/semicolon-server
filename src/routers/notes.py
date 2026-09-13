@@ -11,7 +11,9 @@ router = APIRouter(prefix='/notes', tags=['notes'])
 
 
 @router.post(
-    '/', response_model=schemas.NoteResponse, summary='Create a new note'
+    '/',
+    response_model=schemas.NoteResponse,
+    summary='Create a new note',
 )
 def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     new_note = models.Note(
@@ -123,9 +125,6 @@ def update_note(
     summary='Deletes a specific note',
 )
 def delete_note(note_id: int, db: Session = Depends(get_db)):
-    """
-    D
-    """
     stmt = select(models.Note).where(models.Note.note_id == note_id)
     note = db.scalar(stmt)
 
