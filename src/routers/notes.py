@@ -38,6 +38,10 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     summary='Get a list of all available notes.',
 )
 def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
+    """
+    I'm omitting the 'content' attribute to maximize query performance,
+    since this endpoint will only be used to display the list of notes.
+    """
     stmt = (
         select(models.Note)
         .options(
