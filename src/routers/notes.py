@@ -1,7 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException, status
+from loguru import logger
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, load_only
-from sqlalchemy.sql import select
+from sqlalchemy.sql import func, select
 
 from src.database import get_db
 from src.models import note as models
@@ -22,15 +23,29 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     )
 
     db.add(new_note)
+    logger.debug(f"Adding note: '{new_note.title}'")
     try:
         db.commit()
         db.refresh(new_note)
     except IntegrityError:
+        error_msg = 'Note with this title already exists.'
+        logger.error(
+            f"Error while creating note: '{new_note.title}'. {error_msg}"
+        )
         db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
-            detail='Note with this title already exists.',
+            detail=error_msg,
         )
+    except Exception as e:
+        logger.error(
+            f"Error while creating note: '{new_note.title}', {e}"
+        )
+        db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
+        )
+
     return new_note
 
 
@@ -58,6 +73,9 @@ def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
         .limit(limit)
     )
 
+    total_records = db.scalar(select(func.count(models.Note.note_id)))
+    logger.info(f"Total records: {total_records}")
+
     return db.scalars(stmt).all()
 
 
@@ -71,11 +89,16 @@ def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     note = db.scalar(stmt)
 
     if note is None:
+        error_msg = 'Note is not found.'
+        logger.error(
+            f"Error while retrieving note: {note_id} (id). {error_msg}"
+        )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
-            detail='Note is not found.',
+            detail=error_msg,
         )
 
+    logger.info(f"Retrieving note: {note_id} (id).")
     return note
 
 
@@ -91,8 +114,13 @@ def update_note(
     note = db.scalar(stmt)
 
     if note is None:
+        error_msg = 'Note is not found.'
+        logger.error(
+            f"Error while retrieving note: {note_id} (id). {error_msg}"
+        )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail='Note is not found.'
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_msg,
         )
 
     update_data = data.model_dump(exclude_unset=True)
@@ -105,10 +133,16 @@ def update_note(
         existing_note = db.scalar(title_stmt)
 
         if existing_note:
+            error_msg = 'Note with this title already exists.'
+            logger.error(
+                f"Error while updating note: {note_id} (id). {error_msg}"
+            )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail='Note with this title already exists.',
+                detail=error_msg,
             )
+
+    logger.info(f"The note with id = {note_id} was updated.")
 
     for field, value in update_data.items():
         setattr(note, field, value)
@@ -129,9 +163,15 @@ def delete_note(note_id: int, db: Session = Depends(get_db)):
     note = db.scalar(stmt)
 
     if note is None:
+        error_msg = 'Note is not found.'
+        logger.error(
+            f"Error while retrieving note: {note_id} (id). {error_msg}"
+        )
         raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail='Note is not found.'
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=error_msg,
         )
 
+    logger.info(f"Deleting note: {note_id} (id).")
     db.delete(note)
     db.commit()
