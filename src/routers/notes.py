@@ -38,13 +38,9 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
             detail=error_msg,
         )
     except Exception as e:
-        logger.error(
-            f"Error while creating note: '{new_note.title}', {e}"
-        )
+        logger.error(f"Error while creating note: '{new_note.title}', {e}")
         db.rollback()
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR
-        )
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     return new_note
 
@@ -74,7 +70,7 @@ def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     )
 
     total_records = db.scalar(select(func.count(models.Note.note_id)))
-    logger.info(f"Total records: {total_records}")
+    logger.info(f'Total records: {total_records}')
 
     return db.scalars(stmt).all()
 
@@ -91,14 +87,14 @@ def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     if note is None:
         error_msg = 'Note is not found.'
         logger.error(
-            f"Error while retrieving note: {note_id} (id). {error_msg}"
+            f'Error while retrieving note: {note_id} (id). {error_msg}'
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=error_msg,
         )
 
-    logger.info(f"Retrieving note: {note_id} (id).")
+    logger.info(f'Retrieving note: {note_id} (id).')
     return note
 
 
@@ -116,7 +112,7 @@ def update_note(
     if note is None:
         error_msg = 'Note is not found.'
         logger.error(
-            f"Error while retrieving note: {note_id} (id). {error_msg}"
+            f'Error while retrieving note: {note_id} (id). {error_msg}'
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -135,14 +131,14 @@ def update_note(
         if existing_note:
             error_msg = 'Note with this title already exists.'
             logger.error(
-                f"Error while updating note: {note_id} (id). {error_msg}"
+                f'Error while updating note: {note_id} (id). {error_msg}'
             )
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail=error_msg,
             )
 
-    logger.info(f"The note with id = {note_id} was updated.")
+    logger.info(f'The note with id = {note_id} was updated.')
 
     for field, value in update_data.items():
         setattr(note, field, value)
@@ -165,13 +161,13 @@ def delete_note(note_id: int, db: Session = Depends(get_db)):
     if note is None:
         error_msg = 'Note is not found.'
         logger.error(
-            f"Error while retrieving note: {note_id} (id). {error_msg}"
+            f'Error while retrieving note: {note_id} (id). {error_msg}'
         )
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=error_msg,
         )
 
-    logger.info(f"Deleting note: {note_id} (id).")
+    logger.info(f'Deleting note: {note_id} (id).')
     db.delete(note)
     db.commit()
