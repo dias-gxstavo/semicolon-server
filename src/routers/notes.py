@@ -122,8 +122,19 @@ def update_note(
     update_data = data.model_dump(exclude_unset=True)
 
     if 'title' in update_data:
+        title = update_data['title']
+        if not title.strip():
+            error_msg = 'Title needs at least 1 character.'
+            logger.error(
+                f'Error while updating note: {note_id} (id). {error_msg}'
+            )
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=error_msg,
+            )
+
         title_stmt = select(models.Note).where(
-            models.Note.title == update_data['title'],
+            models.Note.title == title,
             models.Note.note_id != note_id,
         )
         existing_note = db.scalar(title_stmt)
