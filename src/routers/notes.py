@@ -1,6 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, status
 from loguru import logger
-from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session, load_only
 from sqlalchemy.sql import func, select
 
@@ -15,6 +14,7 @@ router = APIRouter(prefix='/notes', tags=['notes'])
     '/',
     response_model=schemas.NoteResponse,
     summary='Create a new note',
+    status_code=status.HTTP_201_CREATED
 )
 def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     new_note = models.Note(
@@ -22,23 +22,38 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
         content=data.content,
     )
 
-    db.add(new_note)
-    logger.debug(f"Adding note: '{new_note.title}'")
-    try:
-        db.commit()
-        db.refresh(new_note)
-    except IntegrityError:
-        error_msg = 'Note with this title already exists.'
+    title = new_note.title
+    if not title.strip():
+        error_msg = 'Title needs at least 1 character.'
         logger.error(
-            f"Error while creating note: '{new_note.title}'. {error_msg}"
+            f"Error while creating note. {error_msg}"
         )
-        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg,
         )
+
+    existing_note = db.scalar(
+        select(models.Note).where(models.Note.title == title)
+    )
+
+    if existing_note:
+        error_msg = 'Note with this title already exists.'
+        logger.error(
+            f"Error while creating note. {error_msg}"
+        )
+        raise HTTPException(
+             status_code=status.HTTP_400_BAD_REQUEST,
+             detail=error_msg,
+         )
+
+    db.add(new_note)
+    logger.debug(f"Adding note: '{title}'")
+    try:
+        db.commit()
+        db.refresh(new_note)
     except Exception as e:
-        logger.error(f"Error while creating note: '{new_note.title}', {e}")
+        logger.error(f"Error while creating note: '{title}', {e}")
         db.rollback()
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
@@ -49,6 +64,7 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     '/',
     response_model=list[schemas.NoteList],
     summary='Get a list of all available notes.',
+    status_code=status.HTTP_200_OK
 )
 def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     """
@@ -79,6 +95,7 @@ def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     '/{note_id}',
     response_model=schemas.NoteResponse,
     summary='Get informations about a specific note',
+    status_code=status.HTTP_200_OK
 )
 def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     stmt = select(models.Note).where(models.Note.note_id == note_id)
@@ -102,6 +119,7 @@ def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     '/{note_id}',
     response_model=schemas.NoteResponse,
     summary='Partially updates information for a specific invoice',
+    status_code=status.HTTP_200_OK
 )
 def update_note(
     note_id: int, data: schemas.NoteUpdate, db: Session = Depends(get_db)
@@ -162,8 +180,8 @@ def update_note(
 
 @router.delete(
     '/{note_id}',
-    status_code=status.HTTP_204_NO_CONTENT,
     summary='Deletes a specific note',
+    status_code=status.HTTP_204_NO_CONTENT,
 )
 def delete_note(note_id: int, db: Session = Depends(get_db)):
     stmt = select(models.Note).where(models.Note.note_id == note_id)
@@ -174,6 +192,8 @@ def delete_note(note_id: int, db: Session = Depends(get_db)):
         logger.error(
             f'Error while retrieving note: {note_id} (id). {error_msg}'
         )
+
+        db.rollback()
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail=error_msg,
