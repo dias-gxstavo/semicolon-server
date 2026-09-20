@@ -54,14 +54,13 @@ A consulta individual, a criação e a edição retornam a nota completa.
 | `DELETE` | `/notes/{note_id}` | `204`: exclui a nota, sem corpo de resposta. |
 
 
-## Estrutura
+## Estrutura do projeto
 
 ```text
 src/
 ├── main.py          # Aplicação, lifespan, CORS e health check
 ├── settings.py      # Leitura de DATABASE_URL e .env
 ├── database.py      # Engine, sessões e dependência get_db
-├── seed.py          # Conteúdo das notas iniciais
 ├── models/note.py   # Modelo ORM e metadados das tabelas
 ├── schemas/note.py  # Contratos de entrada e saída
 └── routers/notes.py # Operações HTTP sobre notas
