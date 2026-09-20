@@ -1,12 +1,13 @@
 <div align="center">
-<a href="#" target="blank">
+<a href="https://stashingit.online/" target="blank">
     <img src="https://amazn-personal-blog.s3.us-east-1.amazonaws.com/favicon-96x96.png" width="96" alt="Logo"/>
 </a>
 
-[![FastAPI](https://img.shields.io/badge/FastAPI-009485.svg?style=for-the-badge&logo=fastapi&logoColor=white)](#)
-![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)
-
 <h2> semicolon - markdown editor </h2>
+
+[![FastAPI](https://img.shields.io/badge/FastAPI-009485.svg?style=for-the-badge&logo=fastapi&logoColor=white)](#)
+[![SQLite](https://img.shields.io/badge/sqlite-%2307405e.svg?style=for-the-badge&logo=sqlite&logoColor=white)](#)
+
 </div>
 
 
