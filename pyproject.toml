@@ -30,7 +30,7 @@ entrypoint = "src.main:app"
 
 [tool.ruff]
 line-length = 79
-exclude = ["migrations/"]
+exclude = ['migrations/', 'seed.py']
 
 [tool.ruff.lint]
 preview = true

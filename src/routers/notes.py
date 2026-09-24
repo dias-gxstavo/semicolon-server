@@ -14,7 +14,7 @@ router = APIRouter(prefix='/notes', tags=['notes'])
     '/',
     response_model=schemas.NoteResponse,
     summary='Create a new note',
-    status_code=status.HTTP_201_CREATED
+    status_code=status.HTTP_201_CREATED,
 )
 def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     new_note = models.Note(
@@ -25,9 +25,7 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     title = new_note.title
     if not title.strip():
         error_msg = 'Title needs at least 1 character.'
-        logger.error(
-            f"Error while creating note. {error_msg}"
-        )
+        logger.error(f'Error while creating note. {error_msg}')
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=error_msg,
@@ -39,13 +37,11 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
 
     if existing_note:
         error_msg = 'Note with this title already exists.'
-        logger.error(
-            f"Error while creating note. {error_msg}"
-        )
+        logger.error(f'Error while creating note. {error_msg}')
         raise HTTPException(
-             status_code=status.HTTP_400_BAD_REQUEST,
-             detail=error_msg,
-         )
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error_msg,
+        )
 
     db.add(new_note)
     logger.debug(f"Adding note: '{title}'")
@@ -64,7 +60,7 @@ def create_note(data: schemas.NoteCreate, db: Session = Depends(get_db)):
     '/',
     response_model=list[schemas.NoteList],
     summary='Get a list of all available notes.',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     """
@@ -95,7 +91,7 @@ def get_notes(skip: int = 0, limit: int = 10, db: Session = Depends(get_db)):
     '/{note_id}',
     response_model=schemas.NoteResponse,
     summary='Get informations about a specific note',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     stmt = select(models.Note).where(models.Note.note_id == note_id)
@@ -119,7 +115,7 @@ def get_note_by_id(note_id: int, db: Session = Depends(get_db)):
     '/{note_id}',
     response_model=schemas.NoteResponse,
     summary='Partially updates information for a specific invoice',
-    status_code=status.HTTP_200_OK
+    status_code=status.HTTP_200_OK,
 )
 def update_note(
     note_id: int, data: schemas.NoteUpdate, db: Session = Depends(get_db)
