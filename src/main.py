@@ -1,17 +1,26 @@
+from contextlib import asynccontextmanager
+
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from sqlalchemy.sql import text
 
+from src.seed import seed_database
+
 from .database import engine, get_db
 from .models import note
 from .routers import notes
 
-note.Base.metadata.create_all(bind=engine)
-app = FastAPI(title='semicolon - a simple markdown editor')
 
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    note.Base.metadata.create_all(bind=engine)
+    seed_database()
+    yield
+
+
+app = FastAPI(title='semicolon - a simple markdown editor', lifespan=lifespan)
 app.include_router(notes.router)
-
 
 app.add_middleware(
     CORSMiddleware,
